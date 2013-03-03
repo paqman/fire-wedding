@@ -1,0 +1,8 @@
+settings.json
+.DS_Store
+*.xls
+*.xlsx
+*.csv
+node_modules
+*.mwb*
+

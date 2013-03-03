@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Emilie &amp; Micha&euml;l - 21 septembre 2013</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<!-- Bootstrap -->
+	<link href="/css/bootstrap.min.css" rel="stylesheet" media="screen">
+</head>
+<body>
+	<div class="container">
+		<fieldset>
+			<legend>Le paradis necessite un mot de passe...</legend>
+			<% if(locals.errorMessage){ %>
+			<p><%= locals.errorMessage %></p>
+			<% } %>
+			<form method="POST" action="entrer">
+				<label for="password">Entrer :</label>
+				<input type="password" value="" name="password" />
+				<input type="submit" value="entrer" name="entrer" />
+			</form>
+		</fieldset>
+	</div>
+
+	<script src="http://code.jquery.com/jquery.js"></script>
+	<script src="/js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -1,42 +1,69 @@
-var express = require('express');
-var Sequelize = require("sequelize");
+// Detect Params  http://nodejs.org/docs/latest/api/process.html#process.argv
 
-var sequelize = new Sequelize('wedding', 'wedding_rw', 'w3dd1ng_rw', {
-	host: "192.168.1.15",
-	port: 8889
+if (process.argv.indexOf('--no-auth') > -1 ){
+  /**
+   * Indicates when to run without requiring auth for API
+   */
+   GLOBAL.no_auth = true;
+}
+
+
+var express = require('express'),
+    /**
+     * Instantiate the unique Express instance
+     */
+     app = module.exports = express();
+
+/**
+ * @type {Express}
+ *
+ * The Singleton of Express app instance
+ */
+ GLOBAL.app = app;
+
+fs = require('fs');
+eval(fs.readFileSync('settings.json', 'ascii'));
+
+ var mysql = require('mysql');
+ var connection_r = mysql.createConnection({
+ 	host : settings.mysql.host,
+ 	user : settings.mysql.user,
+ 	password : settings.mysql.password,
+ 	port : settings.mysql.port,
+ 	database : settings.mysql.database
+ })
+
+ GLOBAL.connection_r = connection_r;
+
+// Configuration
+
+app.configure(function() {
+	app.use(express.logger({format: 'dev'}));
+	app.use(express.bodyParser());
+	app.use(express.cookieParser());
+	app.use(express.session({ secret: 'evilWorldDom1nat10nPlanzisstillsmallshouldhaveNoWords' }));
+	app.use(express.methodOverride());
+	app.use(app.router);
+	app.use(express.static(__dirname + '/public'));
+	app.set('views', __dirname + '/views');
+	app.engine('html', require('ejs').renderFile);
 });
 
-var Invite = sequelize.define('invite', {
-	id: Sequelize.INTEGER,
-	nom: Sequelize.STRING,
-	prenom : Sequelize.STRING,
-	nb_adultes : Sequelize.INTEGER,
-	nb_enfants: Sequelize.INTEGER,
-	presence_ceremonie : Sequelize.BOOLEAN,
-	presence_repas : Sequelize.BOOLEAN,
-	presence_apero : Sequelize.BOOLEAN
-},  { freezeTableName: true });
-
-var app = express();
-
-app.get('/guests', function(req, res) {
-	Invite.findAll()
-	.success(function(models) {
-		res.json(models);
-	})
-	.failure(function(error) {
-		res.send(error);
-	}); 
-});
-app.get('/guests/:id', function(req, res) {
-	Invite.find(req.params.id)
-	.success(function(models) {
-		res.json(models);
-	})
-	.failure(function(error) {
-		res.send(error);
-	}); 
+app.configure('development', function() {
+	app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
 });
 
-app.listen(3000);
-console.log('Listening on port 3000...');
+app.configure('production', function() {
+	app.use(express.errorHandler());
+});
+
+
+// Routes
+
+require('./routes.js');
+
+
+app.listen(8010);
+console.log('Its is on !');
+//console.log('Express server listening on port %d in %s mode',
+//   app.address().port, app.settings.env);
