@@ -1,20 +1,25 @@
 <h1>Inscriptions</h1>
 <div class="row-fluid">
 	<div class="span12">
-		<table class="table">
+		<table class="table avecTotal">
 			<thead>
 				<tr>
+					<th style="width : 16px;"></th>
 					<th class="w25">Nom</th>
 					<th class="w15">Personnes</th>
 					<th class="w10">Couchage(s)</th>
 					<th class="w10">Repas Dimanche</th>
 					<th class="w10">Navette</th>
 					<th>Commentaires</th>
+					<th class="w10"></th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr ng-repeat="inscription in inscriptions">
-					<td>{{inscription.prenom}} {{inscription.nom}}
+					<td><i ng-click="switchInvite(inscription)" class="with-action icon-white" ng-class="{'icon-user' : inscription.view == undefined || inscription.view == 'commentaires', 'icon-comment' : inscription.view == 'invites'}" ng-show="inscription.invite != undefined"></i></td>
+					<td>
+						
+						{{inscription.prenom}} {{inscription.nom}}
 					</td>
 					<td>
 						<ul class="unstyled">
@@ -35,15 +40,31 @@
 						<span ng-switch-default>{{inscription.lieu_navette}}</span>
 					</td>
 					<td>
-						{{inscription.commentaires}}
+						<div ng-show="inscription.view == undefined || inscription.view == 'commentaires'">
+							{{inscription.commentaires}}
+						</div>
+						<ul class="unstyled" ng-show="inscription.view == 'invites'">
+							<li ng-repeat="inv in inscription.invites">{{inv.prenom}} {{inv.nom}}</li>
+						</ul>
+					</td>
+					<td style="text-align : right;">
+						<i class="with-action icon-white icon-pencil"></i>
+						<i class="with-action icon-white icon-random"></i>						
 					</td>
 				</tr>
 				<tr>
-					<td class="w25">{{inscriptions.length}} inscriptions</td>
-					<td class="w15">{{totaux.personnes}} personnes</td>
+					<td colspan="2" class="w25">{{inscriptions.length}} inscriptions</td>
+					<td class="w15">
+						<ul class="unstyled">
+							<li>{{totaux.adultes}} adultes</li>
+							<li>{{totaux.enfants}} enfants</li>
+							<li><b>{{totaux.personnes}} personnes</b></li>
+						</ul>
+					</td>
 					<td class="w10">{{totaux.couchages}} couchages</td>
 					<td class="w10">{{totaux.dimanche}} repas Dimanche</td>
-					<td class="w10">{{totaux.navette}} navette</td>
+					<td class="w10">{{totaux.navette}} navettes</td>
+					<td></td>
 					<td></td>
 				</tr>
 			</tbody>
@@ -53,3 +74,68 @@
 		
 	</div>
 </div>
+
+<form>
+	<fieldset>
+		<legend>Ajouter un invit&eacute;</legend>
+	
+	<ul id="erreurs" ng-show="erreurs != undefined && erreurs.length > 0">
+		<li ng-repeat="erreur in erreurs">
+			{{erreur}}
+		</li>
+	</ul>
+	<div class="row-fluid">
+		<div class="span6">
+			<label for="nom">Nom *</label>
+			<input type="text" name="nom" value="" id="nom" ng-model="invite.nom" placeholder="Nom" class="input-xlarge" />
+
+			<label for="prenom">Pr&eacute;nom *</label>
+			<input type="text" name="prenom" value="" id="prenom" ng-model="invite.prenom" class="input-xlarge" placeholder="Pr&eacute;nom" />
+		</div>
+		<div class="span6">
+			<label for="nbAdultes">Nombre d'adultes</label>
+			<select name="nbAdultes" id="nbAdultes" ng-model="invite.nb_adultes" >
+				<option value="1">1</option>
+				<option value="2">2</option>
+				<option value="3">3</option>
+				<option value="4">4</option>
+				<option value="5">5</option>
+				<option value="6">6</option>
+			</select>
+			<label for="nbEnfants">Nombre d'enfants</label>
+			<select name="nbEnfants" id="nbEnfants" ng-model="invite.nb_enfants">
+				<option value="0">0</option>
+				<option value="1">1</option>
+				<option value="2">2</option>
+				<option value="3">3</option>
+				<option value="4">4</option>
+				<option value="5">5</option>
+			</select>
+			<p class="">Soit {{nbPersonnes()}} personne(s).</p>
+		</div>
+	</div>	
+	<div class="row-fluid">
+		<div class="span4">
+			<label class="checkbox">
+				<input type="checkbox" name="presence_ceremonie" value="false" ng-model="invite.presence_ceremonie" />
+				C&eacute;r&eacute;monie
+			</label>
+		</div>
+		<div class="span4">
+			<label class="checkbox">
+				<input type="checkbox" name="presence_apero" value="false" ng-model="invite.presence_apero" />
+				Ap&eacute;ro
+			</label>
+		</div>
+		<div class="span4">
+			<label class="checkbox">
+				<input type="checkbox" name="presence_repas" value="false" ng-model="invite.presence_repas" />
+				Repas
+			</label>
+		</div>
+	</div>
+	<p class="" style="text-align : right;">
+		<button data-placement="top" class="btn btn-success" ng-click="enregistrer()">Enregistrer</button>
+	</p>
+	</fieldset>
+</form>

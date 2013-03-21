@@ -33,7 +33,7 @@ require('./utils.js');
 
 app.get('/s/', function(request, response){
 	if (request.session.authed && request.session.role == 'admin' || request.session.role == 'user') {
- 		response.render("index.html", {locals : {admin : (request.session.role =='admin')}});
+ 		response.render("index.html", {locals : {admin : (request.session.role =='admin'), contact : settings.contact }});
  	} else {
  		response.redirect('/');
  		//response.send(403, 'Vous devez vous authentifier.<br /><a href="/">Retour</a>');
@@ -125,12 +125,90 @@ app.get('/v/:vue/:nom', function(request, response){
 
  });
 
+ /*
+ * Enregistrement d'un nouvel invite
+ */
+ app.post('/a/invite', function(request, response){
+ 	var patt = /^[a-zA-Z0-9!\?-_:\',\.\+\s]*$/im;
+ 	
+ 	var invite = new Object();
+ 	var errors = [];
+ 	if(isEmpty(request.body.nom)){
+ 		errors.push("Veuillez entrer votre nom.");
+ 	}else{
+ 		if(patt.test(request.body.nom)){
+ 			invite.nom = request.body.nom;
+	 	}else{
+			errors.push("Certains caracteres de votre nom sont interdits.");
+	 	}
+ 	}
+
+ 	if(isEmpty(request.body.prenom)){
+ 		errors.push("Veuillez entrer votre prenom.");
+ 	}else{
+ 		if(patt.test(request.body.prenom)){
+ 			invite.prenom = request.body.prenom;
+	 	}else{
+			errors.push("Certains caracteres de votre prenom sont interdits.");
+	 	}
+ 		
+ 	}
+
+ 	if(isEmpty(request.body.nb_enfants) && between(request.body.nb_enfants, 0, 5)) {
+ 		errors.push("Indiquez le nombre d'enfants.");
+ 	}else{
+ 		invite.nb_enfants = request.body.nb_enfants;
+ 	}
+
+ 	if(isEmpty(request.body.nb_adultes) && between(request.body.nb_adultes, 1, 6)) {
+ 		errors.push("Indiquez le nombre d'adultes.");
+ 	}else{
+ 		invite.nb_adultes = request.body.nb_adultes;
+ 	}
+
+	invite.presence_ceremonie = isEmpty(request.body.presence_ceremonie) || !request.body.presence_ceremonie ? 0 : 1;
+	invite.presence_repas = isEmpty(request.body.presence_repas) || !request.body.presence_repas ? 0 : 1;
+	invite.presence_apero = isEmpty(request.body.presence_apero) || !request.body.presence_apero ? 0 : 1;
+
+ 	// Si on a des erreurs, on les retourne
+ 	if(errors.length > 0){
+ 		response.json(500, errors);
+ 		return;
+ 	}
+
+ 	// Enregistrement en DB
+	var query = connection_rw.query('INSERT INTO invite SET ?', invite, function(err, result){
+		response.json(invite);
+	});
+   
+ });
+
+/*
+ * Recupere les invites lies a une inscription
+*/
+app.get('/a/inscription/invite/:opt', function(request, response){
+	var invites = [];
+ 	var query = connection_r.query('SELECT i.* FROM `invite` i, `compose` c WHERE i.id = c.id_invite and c.id_inscription = ?', [request.params.opt]);
+
+ 	query.on('error', function(err){
+ 		console.log('MYSQL error :' + err);
+ 	});
+
+ 	query.on('result', function(row){
+ 		invites.push(row);
+ 	});
+
+ 	query.on('end',function(){
+ 		response.json(invites);
+ 	});
+});
+
 /*
  * Inscriptions
  */
  app.get('/a/inscription', function(request, response){
  	var invites = [];
- 	var query = connection_r.query('SELECT i.*, c.id_invite as invite FROM `inscription` i LEFT JOIN `compose` c ON c.id_inscription = i.id');
+ 	var query = connection_r.query('SELECT i.*, c.id_invite as invite FROM `inscription` i LEFT JOIN `compose` c ON c.id_inscription = i.id  group by i.id');
 
  	query.on('error', function(err){
  		console.log('MYSQL error :' + err);
@@ -149,7 +227,7 @@ app.get('/v/:vue/:nom', function(request, response){
  * Enregistrement d'une inscription
  */
  app.post('/s/inscription', function(request, response){
- 	var patt = /^[a-zA-Z0-9-_\',\.\+\\s]*$/im;
+ 	var patt = /^[a-zA-Z0-9!\?-_:\',\.\+\s]*$/im;
  	console.log(request.body);
  	var inscription = new Object();
  	var errors = [];
@@ -217,11 +295,9 @@ app.get('/v/:vue/:nom', function(request, response){
 	inscription.is_active = true;
 	inscription.ip = request.ip;
 
+ 	// Enregistrement en DB
 	var query = connection_rw.query('INSERT INTO inscription SET ?', inscription, function(err, result){
 		response.json(inscription);
 	});
-	console.log(query.sql);
-
- 	// Enregistrement en DB
    
  });

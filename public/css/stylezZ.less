@@ -243,3 +243,34 @@ table th.w15 {
 table th.w25{
 	width : 25%;
 }
+
+table.avecTotal tbody tr:last-child
+{
+	background-color : #DDD;
+	td:nth-child(3), td:nth-child(4), td:nth-child(5) {
+		text-align : center;
+	}
+}
+
+[class*="icon-"].with-action
+{
+	background-color : @color1;
+	border-radius : 3px;
+	padding : 1px;
+	border-top : 2px solid @color1;
+	border-left : 2px solid @color1;
+	border-right : 1px solid @color3;
+	border-bottom : 1px solid @color3;
+	cursor: pointer;
+
+	&:hover{
+		background-color : @color2;
+		border-top : 2px solid @color2;
+		border-left : 2px solid @color2;
+		border-right : 1px solid @color1;
+		border-bottom : 1px solid @color1;
+	}
+}
+
+
+

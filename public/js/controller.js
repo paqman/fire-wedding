@@ -44,33 +44,41 @@ function InscriptionCtrl($scope, $routeParams, $http) {
 		// Validation du formulaire
 		$http({method: 'POST', url: '/s/inscription', data : $scope.inscription}).
 		success(function(data, status) {
-			alert('ok');
+			alert('Votre inscription a bien &eacute;t&eacute; prise en compte !');
 			$scope.data = data;
 		}).
 		error(function(data, status) {
-			alert('KO'+data);
+			alert('Erreur : '+data);
 		});
 	}
 }
 
 function AdminCtrl($scope, $routeParams, $http) {
+	$scope.invite = {};
+	$scope.invite.nb_enfants = 0;
+	$scope.invite.nb_adultes = 1;
+
+	$scope.nbPersonnes = function nbPersonnes(){
+		return parseInt($scope.invite.nb_adultes) + parseInt($scope.invite.nb_enfants);
+	}
 
 	$http({method: 'GET', url: '/a/inscription'}).
 		success(function(data, status) {
 			$scope.inscriptions = data;
 			
-			var totaux = {couchages : 0, dimanche : 0, navette : 0, personnes : 0};
+			var totaux = {couchages : 0, dimanche : 0, navette : 0, personnes : 0, enfants : 0, adultes : 0};
 			for(var i = 0; i< $scope.inscriptions.length; i++){
 				var inscription = $scope.inscriptions[i];
 				
-				var nbPersonnes = inscription.nb_adultes + inscription.nb_enfants;
-				totaux.personnes += nbPersonnes;
+				totaux.adultes += inscription.nb_adultes;
+				totaux.enfants += inscription.nb_enfants;
+				totaux.personnes += inscription.nb_adultes + inscription.nb_enfants;
 				
 				if(inscription.nb_couchages > 0){
 					totaux.couchages += inscription.nb_couchages;
 				}
 				if(inscription.presence_dimanche != 0){
-					totaux.dimanche += nbPersonnes;
+					totaux.dimanche += inscription.nb_adultes + inscription.nb_enfants;
 				}
 				if(inscription.besoin_navette != 0){
 					totaux.navette += 1;
@@ -79,8 +87,53 @@ function AdminCtrl($scope, $routeParams, $http) {
 			$scope.totaux = totaux;
 		}).
 		error(function(data, status) {
-			alert("Impossible de recupere les inscriptions : " + data);
+			alert("Impossible de recuperer les inscriptions : " + data);
 		});
 
+	$scope.enregistrer = function enregistrer(){
+
+		// Validation du formulaire
+		$http({method: 'POST', url: '/a/invite', data : $scope.invite}).
+		success(function(data, status) {
+			if(status == 200)
+			{
+				alert('ok');
+				$scope.data = data;
+				$scope.invite = {};
+				$scope.invite.nb_enfants = 0;
+				$scope.invite.nb_adultes = 1;
+			}else{
+				alert('KO '+data);	
+			}
+		}).
+		error(function(data, status) {
+			alert('KO '+data);
+		});
+	}
+
+	$scope.switchInvite = function switchInvite(ins){
+		if(ins.invites == undefined){
+			$http({
+				method: 'GET', 
+				url: '/a/inscription/invite/'+ins.id
+			}).
+			success(function(data, status) {
+				if(data.length < 1) {
+					ins.invites = [{nom : 'Aucun invite associe.'}];
+				}else{
+					ins.invites = data;
+				}
+			}).
+			error(function(data, status) {
+				alert('Impossible de recuperer les invites : '+data);
+			});
+		}
+
+		if(ins.view == undefined || ins.view == "commentaires"){
+			ins.view = "invites";
+		}else{
+			ins.view = "commentaires";
+		}
+	};
 
 }

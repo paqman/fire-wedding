@@ -55,20 +55,22 @@
 				<div class="span12">
 					<h3>Contacts</h3>
 				</div></div>
+				<% if(locals.admin){ %>
 					<div class="row-fluid">
+
 						<div class="span6">
-							<i class="pull-left">@</i><p class="ml2"><a href="mailto:eux@emilie-et-michael.fr">eux@emilie-et-michael.fr</a></p>
-							<i class="icon-signal icon-white pull-left"></i><p class="ml2">Emilie : 06.06.06.06.06<br />
-							Micha&euml;l : 07.07.07.07.07</p>
+							<i class="pull-left">@</i><p class="ml2"><a href="mailto:<%= locals.contact.mail %>"><%= locals.contact.mail %></a></p>
+							<i class="icon-signal icon-white pull-left"></i><p class="ml2">Emilie : <%= locals.contact.emilie %><br />
+							Micha&euml;l : <%= locals.contact.michael %></p>
 						</div>
 						<div class="span6">
 							<i class="icon-home icon-white pull-left"></i>
-							<p class="ml2">  Emilie EHRET &amp; Micha&euml;l  PAQUELIER<br />
-							10 rue de la treille<br />
-							57100 THIONVILLE</p>
+							<p class="ml2">  <%= locals.contact.adr1 %><br />
+							<%= locals.contact.adr2 %><br />
+							<%= locals.contact.adr3 %></p>
 						</div>
 					</div>
-					
+					<% } %>
 				</div>
 			</div>
 		</div>
