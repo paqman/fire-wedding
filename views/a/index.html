@@ -1,0 +1,55 @@
+<h1>Inscriptions</h1>
+<div class="row-fluid">
+	<div class="span12">
+		<table class="table">
+			<thead>
+				<tr>
+					<th class="w25">Nom</th>
+					<th class="w15">Personnes</th>
+					<th class="w10">Couchage(s)</th>
+					<th class="w10">Repas Dimanche</th>
+					<th class="w10">Navette</th>
+					<th>Commentaires</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr ng-repeat="inscription in inscriptions">
+					<td>{{inscription.prenom}} {{inscription.nom}}
+					</td>
+					<td>
+						<ul class="unstyled">
+							<li>{{inscription.nb_adultes}} adultes</li>
+							<li>{{inscription.nb_enfants}} enfants</li>
+						</ul>
+					</td>
+					<td ng-switch on="inscription.nb_couchages" >
+						<span class="flag non" ng-switch-when="0">&Chi;</span>
+						<span class="flag oui" ng-switch-default>{{inscription.nb_couchages}}</span>
+					</td>
+					<td ng-switch on="inscription.presence_dimanche">
+						<span class="flag non" ng-switch-when="0">&Chi;</span>
+						<span class="flag oui" ng-switch-default>V</span>
+					</td>
+					<td ng-switch on="inscription.besoin_navette">
+						<span class="flag non" ng-switch-when="0">&Chi;</span>
+						<span ng-switch-default>{{inscription.lieu_navette}}</span>
+					</td>
+					<td>
+						{{inscription.commentaires}}
+					</td>
+				</tr>
+				<tr>
+					<td class="w25">{{inscriptions.length}} inscriptions</td>
+					<td class="w15">{{totaux.personnes}} personnes</td>
+					<td class="w10">{{totaux.couchages}} couchages</td>
+					<td class="w10">{{totaux.dimanche}} repas Dimanche</td>
+					<td class="w10">{{totaux.navette}} navette</td>
+					<td></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<div class="span6" ng-show="false">
+		
+	</div>
+</div>

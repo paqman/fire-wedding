@@ -1,14 +1,77 @@
 <!DOCTYPE html>
-<html>
+<html ng-app="wedding">
 <head>
 	<title>Emilie &amp; Micha&euml;l - 21 septembre 2013</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<link rel="stylesheet/less" type="text/css" href="/css/stylezZ.less" />
+	<script src="/js/lib/less-1.3.3.min.js" type="text/javascript"></script>
+
+	<link href='/css/bootstrap-responsive.min.css' rel="stylesheet" media="screen" />
+	<!--<link href='/css/stylezZ.css' rel="stylesheet" media="screen" />-->
+	<link href='http://fonts.googleapis.com/css?family=Sacramento' rel='stylesheet' type='text/css'>
+
 	<!-- Bootstrap -->
-	<link href="/css/bootstrap.min.css" rel="stylesheet" media="screen">
+	
+	<script src="/js/lib/jquery.js"></script>
+	<script src="/js/lib/bootstrap.min.js"></script>
+	<script src="/js/lib/angular.min.js"></script>
+	<script src="/js/lib/angular-resource.min.js"></script>
+	<script src="/js/app.js"></script>
+	<script src="/js/controller.js"></script>
+	<script src="/js/resource.js"></script>
 </head>
 <body>
-	<h1>Moien !</h1>
-	<script src="http://code.jquery.com/jquery.js"></script>
-	<script src="/js/bootstrap.min.js"></script>
+	
+	<div class="container">
+		<div>
+			<div class="menu">
+				<ul class="inline">
+					<% if(locals.admin){ %>
+						<li class="x"><a href="#/admin">Admin</a></li>
+					<% } %>
+					<li class="y"><a href="#">Inscription</a></li>
+					<li class="z"><a href="#">Informations</a></li>
+					<li class="quitter"><a href="/quitter">Quitter</a></li>
+				</ul>
+			</div>
+			<div class="header">
+				<div class="gauche"></div>
+				<div class="milieu">
+					<h1>Emilie &amp; Micha&euml;l</h1>
+					<p class="date">21 septembre 2013</p>
+				</div>
+				<div class="droite"></div>
+			</div>
+
+			<div class="contenu">
+				<div ng-view>
+				</div>
+
+			</div>
+			
+			<div class="contacts">
+				<div class="row-fluid">
+				<div class="span12">
+					<h3>Contacts</h3>
+				</div></div>
+					<div class="row-fluid">
+						<div class="span6">
+							<i class="pull-left">@</i><p class="ml2"><a href="mailto:eux@emilie-et-michael.fr">eux@emilie-et-michael.fr</a></p>
+							<i class="icon-signal icon-white pull-left"></i><p class="ml2">Emilie : 06.06.06.06.06<br />
+							Micha&euml;l : 07.07.07.07.07</p>
+						</div>
+						<div class="span6">
+							<i class="icon-home icon-white pull-left"></i>
+							<p class="ml2">  Emilie EHRET &amp; Micha&euml;l  PAQUELIER<br />
+							10 rue de la treille<br />
+							57100 THIONVILLE</p>
+						</div>
+					</div>
+					
+				</div>
+			</div>
+		</div>
+	
 </body>
 </html>

@@ -33,7 +33,16 @@ eval(fs.readFileSync('settings.json', 'ascii'));
  	database : settings.mysql.database
  })
 
+var connection_rw = mysql.createConnection({
+ 	host : settings.mysql.host,
+ 	user : settings.mysql.user_rw,
+ 	password : settings.mysql.password_rw,
+ 	port : settings.mysql.port,
+ 	database : settings.mysql.database
+ }) 
+
  GLOBAL.connection_r = connection_r;
+ GLOBAL.connection_rw = connection_rw;
 
 // Configuration
 
@@ -57,10 +66,9 @@ app.configure('production', function() {
 	app.use(express.errorHandler());
 });
 
-
 // Routes
-
 require('./routes.js');
+
 
 
 app.listen(8010);

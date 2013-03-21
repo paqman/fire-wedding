@@ -1,3 +1,14 @@
 html, body{
-	font-family: 'Sacramento', cursive;
+	/*font-family: 'Sacramento', cursive;*/
 }
+
+div.container {
+	padding : 10px;
+	margin-top : 1em;
+	border : 1px solid #65324B;
+}
+
+div.container > div{
+	border : 1px solid #65324B;	
+}
+

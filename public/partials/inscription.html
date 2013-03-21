@@ -1,0 +1,87 @@
+<form>
+	<fieldset>
+		<legend>Inscription</legend>
+		<p>Vous pouvez confirmer votre pr&eacute;sence au mariage en compl&eacute;tant le formulaire suivant : </p>
+		<ul id="erreurs" ng-show="erreurs != undefined && erreurs.length > 0">
+			<li ng-repeat="erreur in erreurs">
+				{{erreur}}
+			</li>
+		</ul>
+
+		<label for="nom">Nom *</label>
+		<input type="text" name="nom" value="" id="nom" ng-model="inscription.nom" placeholder="Votre nom" class="input-xlarge" />
+
+		<label for="prenom">Pr&eacute;nom *</label>
+		<input type="text" name="prenom" value="" id="prenom" ng-model="inscription.prenom" class="input-xlarge" placeholder="Votre pr&eacute;nom" />
+
+		<div class="row-fluid">
+			<div class="span6">
+				<label for="nbAdultes">Nombre d'adultes</label>
+				<select name="nbAdultes" id="nbAdultes" ng-model="inscription.nbAdultes" >
+					<option value="1">1</option>
+					<option value="2">2</option>
+					<option value="3">3</option>
+					<option value="4">4</option>
+					<option value="5">5</option>
+				</select>
+			</div>
+			<div class="span6">
+
+				<label for="nbEnfants">Nombre d'enfants</label>
+				<select name="nbEnfants" id="nbEnfants" ng-model="inscription.nbEnfants">
+					<option value="0">0</option>
+					<option value="1">1</option>
+					<option value="2">2</option>
+					<option value="3">3</option>
+					<option value="4">4</option>
+					<option value="5">5</option>
+				</select>
+			</div>
+		</div>
+		<p class="">Soit {{nbPersonnes()}} personne(s).</p>
+
+		<label class="checkbox">
+			<input type="checkbox" name="couchageRequis" ng-change="inscription.nbCouchages = nbPersonnes()" id="couchageRequis" value="true" ng-model="inscription.couchageRequis" />
+			Je souhaite b&eacute;n&eacute;ficier d'un couchage sur place le samedi soir. <span data-placement="right" class="aide" rel="tooltip" title="Des couchages communs sont mis &agrave; disposition &agrave; l'&eacute;tage de la salle.">?</span></label>
+			
+			<label for="nbCouchages" ng-show="inscription.couchageRequis">Nombre de couchages
+			<select name="nbCouchages" id="nbCouchages" ng-model="inscription.nbCouchages">
+				<option value="0">0</option>
+				<option value="1">1</option>
+				<option value="2">2</option>
+				<option value="3">3</option>
+				<option value="4">4</option>
+				<option value="5">5</option>
+				<option value="6">6</option>
+				<option value="7">7</option>
+				<option value="8">8</option>
+			</select>
+		</label>
+
+			<label class="checkbox">
+				<input type="checkbox" name="presenceDimanche" value="true" ng-model="inscription.presenceDimanche" />
+				Nous serons pr&eacute;sents le dimanche midi pour un repas l&eacute;ger.
+			</label>
+
+			<label class="checkbox">
+				<input type="checkbox" name="besoinNavette" value="true" ng-model="inscription.besoinNavette" />
+				Nous souhaitons b&eacute;n&eacute;ficier d'une navette.</label>
+			
+			<div ng-show="inscription.besoinNavette == true" >
+				<label for="lieuNavette">Lieu de retour</label>
+				<input type="text" name="lieuNavette" value="" ng-model="inscription.lieuNavette" placeholder="Lieu de retour" />
+			</div>
+
+
+			<label class="mt2" for="commentaires">Si vous avez des commentaires, remarques ou toute autre information &agrave; nous faire savoir, n'h&eacute;sitez pas !</label>
+			<textarea id="commentaires" rows="5" class="input-xxlarge" name="commentaires" ng-model="inscription.commentaires"></textarea>
+			<p class="" style="text-align : right;">
+				<button ng-disabled="!isFormValid(false)" data-placement="right" rel="tooltip" title="Des couchages communs sont mis &agrave; disposition &agrave; l'&eacute;tage de la salle." class="btn btn-success" ng-click="confirmer()">Confirmeeer</button>
+			</p>
+		</fieldset>
+	</form>
+	<script type="text/javascript">
+		$(document).ready(function(){
+			$('.aide, .btn-success').tooltip();
+		});
+		</script>
