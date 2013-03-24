@@ -8,7 +8,7 @@ require('./utils.js');
  * API Authentication filter
  */
  app.all('/a/*', function(request, response, next) {
- 	if (request.session.authed && request.session.role == 'admin') {
+ 	if (isAdmin(request)) {
  		next();
  	} else {
  		response.send(403, 'must auth');
@@ -16,7 +16,7 @@ require('./utils.js');
  });
 
  app.all('/s/*', function(request, response, next) {
- 	if (request.session.authed && request.session.role == 'admin' || request.session.role == 'user') {
+ 	if (isAuthenticated(request)) {
  		next();
  	} else {
  		response.send(403, 'must auth');
@@ -32,8 +32,8 @@ require('./utils.js');
  });
 
 app.get('/s/', function(request, response){
-	if (request.session.authed && request.session.role == 'admin' || request.session.role == 'user') {
- 		response.render("index.html", {locals : {admin : (request.session.role =='admin'), contact : settings.contact }});
+	if (isAuthenticated(request)) {
+ 		response.render("index.html", {locals : {admin : isAdmin(request), contact : settings.contact }});
  	} else {
  		response.redirect('/');
  		//response.send(403, 'Vous devez vous authentifier.<br /><a href="/">Retour</a>');
@@ -48,14 +48,14 @@ app.get('/v/:vue/:nom', function(request, response){
 	require('ejs').clearCache();
 	if(request.params.vue != undefined && request.params.nom != undefined){
 		var allowed = false;
-		if(request.params.vue == "a" && request.session.role == 'admin'){
+		if(request.params.vue == "a" && isAdmin(request)){
 			allowed = true;
-		}else if(request.params.vue == "s" && (request.session.role == 'user' || request.session.role == 'admin') ){
+		}else if(request.params.vue == "s" && isAuthenticated(request) ){
 			allowed = true;
 		}
 
 		if(allowed){
-			response.render(request.params.vue + '/' + request.params.nom + '.html');
+			response.render(request.params.vue + '/' + request.params.nom + '.html', {locals : {admin : isAdmin(request) }});
 		}else{
 			response.send(404, "Vous n'avez pas les droits !");	
 		}
@@ -289,6 +289,14 @@ app.get('/a/inscription/invite/:opt', function(request, response){
  	if(errors.length > 0){
  		response.json(500, errors);
  		return;
+ 	}
+
+ 	if(isAdmin(request)){
+ 		inscription.presence_apero = isEmpty(request.body.presence_apero) || !request.body.presence_apero ? 0 : 1;
+ 		inscription.presence_ceremonie = isEmpty(request.body.presence_ceremonie) || !request.body.presence_ceremonie ? 0 : 1;
+ 		inscription.presence_repas = isEmpty(request.body.presence_repas) || !request.body.presence_repas ? 0 : 1;
+ 	}else{
+ 		inscription.presence_apero = inscription.presence_ceremonie = inscription.presence_repas = 0;
  	}
 
  	inscription.date_inscription = new Date();

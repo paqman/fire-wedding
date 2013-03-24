@@ -81,6 +81,29 @@
 
 			<label class="mt2" for="commentaires">Si vous avez des commentaires, remarques ou toute autre information &agrave; nous faire savoir, n'h&eacute;sitez pas !</label>
 			<textarea id="commentaires" rows="5" class="input-xxlarge" name="commentaires" ng-model="inscription.commentaires"></textarea>
+			<% if(locals.admin){ %>
+			<div class="row-fluid">
+				<div class="span4">
+					<label class="checkbox">
+						<input type="checkbox" name="presence_ceremonie" value="false" ng-model="inscription.presence_ceremonie" />
+						C&eacute;r&eacute;monie
+					</label>
+				</div>
+				<div class="span4">
+					<label class="checkbox">
+						<input type="checkbox" name="presence_apero" value="false" ng-model="inscription.presence_apero" />
+						Ap&eacute;ro
+					</label>
+				</div>
+				<div class="span4">
+					<label class="checkbox">
+						<input type="checkbox" name="presence_repas" value="false" ng-model="inscription.presence_repas" />
+						Repas
+					</label>
+				</div>
+			</div>
+			<% } %>
+
 			<p class="" style="text-align : right;">
 				<button data-html="true" ng-class="{disabled : !isFormValid(false)}" data-placement="top" rel="tooltip" title="{{getErrors().join('<br />')}}"  class="btn btn-success" ng-click="confirmer()">Confirmer</button>
 			</p>

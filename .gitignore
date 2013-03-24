@@ -5,4 +5,5 @@ settings.json
 *.csv
 node_modules
 *.mwb*
-
+views/s/faire-part.html
+views/s/faire-part-recto.html

@@ -13,3 +13,15 @@
  GLOBAL.between = function between(valeur, min, max) {
  	return (parseInt(valeur) >= parseInt(min) && parseInt(valeur) <= parseInt(max));
  }
+
+ GLOBAL.isAdmin = function isAdmin(req) {
+ 	return (req.session.authed && req.session.role === 'admin');
+ }
+
+ GLOBAL.isUser = function isUser(req){
+ 	return (req.session.authed && req.session.role === 'user');	
+ }
+
+ GLOBAL.isAuthenticated = function isAuthenticated(req){
+ 	return (isAdmin(req) || isUser(req));
+ }

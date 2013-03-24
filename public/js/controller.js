@@ -1,4 +1,4 @@
-function InscriptionCtrl($scope, $routeParams, $http) {
+function InscriptionCtrl($scope, $routeParams, $http, $location) {
 
 	$scope.inscription = new Object();
 	$scope.inscription.nbEnfants = 0;
@@ -44,8 +44,7 @@ function InscriptionCtrl($scope, $routeParams, $http) {
 		// Validation du formulaire
 		$http({method: 'POST', url: '/s/inscription', data : $scope.inscription}).
 		success(function(data, status) {
-			alert('Votre inscription a bien &eacute;t&eacute; prise en compte !');
-			$scope.data = data;
+			$location.path('/confirmation');
 		}).
 		error(function(data, status) {
 			alert('Erreur : '+data);
