@@ -1,18 +1,11 @@
-// Detect Params  http://nodejs.org/docs/latest/api/process.html#process.argv
-
-if (process.argv.indexOf('--no-auth') > -1 ){
-  /**
-   * Indicates when to run without requiring auth for API
-   */
-   GLOBAL.no_auth = true;
-}
-
 
 var express = require('express'),
     /**
      * Instantiate the unique Express instance
      */
      app = module.exports = express();
+var crypto = require('crypto');
+GLOBAL.crypto = crypto;
 
 /**
  * @type {Express}

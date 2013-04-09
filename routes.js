@@ -57,7 +57,7 @@ app.get('/v/:vue/:nom', function(request, response){
 		if(allowed){
 			response.render(request.params.vue + '/' + request.params.nom + '.html', {locals : {admin : isAdmin(request) }});
 		}else{
-			response.send(404, "Vous n'avez pas les droits !");	
+			response.send(404, "Page inconnue !");	
 		}
 	}else{
 		response.send(404, "Page inconnue !");
@@ -69,8 +69,12 @@ app.get('/v/:vue/:nom', function(request, response){
  */
  app.post('/entrer', function(request, response) {
  	var authent = { date_connexion : new Date(), ip : request.ip, navigateur : request.headers['user-agent'] };
+ 	
+	var shasum = crypto.createHash('sha1');
+	shasum.update(settings.credential.salt + request.body.password);
+	var pass = shasum.digest('hex');
 
- 	if (GLOBAL.no_auth || request.body.password == 'emilie') {
+ 	if (pass === settings.credential.user) {
  		request.session.regenerate(function(err){
 		   	request.session.authed = true;
 	 		request.session.role = 'user';
@@ -81,7 +85,7 @@ app.get('/v/:vue/:nom', function(request, response){
 	 		
 	 		return;
 		 });
- 	} else if (GLOBAL.no_auth || request.body.password == 'michael') {
+ 	} else if (pass === settings.credential.admin) {
  		request.session.regenerate(function(err){
  			request.session.authed = true;
  			request.session.role = 'admin';
@@ -451,10 +455,28 @@ app.get('/a/inscription/invite/:id', function(request, response){
 		inscription.is_active = true;
 		inscription.ip = request.ip;
 	
-	 	// Enregistrement en DB
-		var query = connection_rw.query('INSERT INTO inscription SET ?', inscription, function(err, result){
-			response.json(inscription);
-		});
+		if(!isAdmin(request)){
+			var checkQuery = connection_rw.query('SELECT * FROM inscription WHERE ip = ?', [request.ip], function(err, rows, fields){
+				if (err) throw err;
+			
+				if(rows.length >= 3){
+					response.json(400, ['Vous avez depasse le nombre d\'inscriptions possibles. Merci de nous contacter par e-mail.']);
+					return;
+				}
+				// Enregistrement en DB
+				var query = connection_rw.query('INSERT INTO inscription SET ?', inscription, function(err, result){
+					response.json(inscription);
+				});
+				
+				return;
+			});
+		}else{
+			// Enregistrement en DB
+			var query = connection_rw.query('INSERT INTO inscription SET ?', inscription, function(err, result){
+				response.json(inscription);
+			});
+		}
+
 	return;
 	}
  });
