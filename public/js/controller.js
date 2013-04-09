@@ -56,6 +56,10 @@ function AdminCtrl($scope, $routeParams, $http) {
 	$scope.invite = {};
 	$scope.invite.nb_enfants = 0;
 	$scope.invite.nb_adultes = 1;
+	$scope.showIcones = false;
+	$scope.predicate = '';
+	$scope.reverse = false;
+
 
 	$scope.nbPersonnes = function nbPersonnes(){
 		return parseInt($scope.invite.nb_adultes) + parseInt($scope.invite.nb_enfants);
@@ -134,5 +138,216 @@ function AdminCtrl($scope, $routeParams, $http) {
 			ins.view = "commentaires";
 		}
 	};
+	
+	$scope.updatePresence = function updatePresence(inscription, presence){
+		var identifiant = parseInt(inscription.id);
+		if(identifiant < 0)
+			return ;
+			
+		$http({
+			method: 'PUT', 
+			url: '/a/presence/'+identifiant+'/'+presence
+		}).
+		success(function(data, status) {
+			if(presence == 'repas'){
+				inscription.presence_repas = (inscription.presence_repas+1) %2;
+			}else if(presence == 'ceremonie'){
+				inscription.presence_ceremonie = (inscription.presence_ceremonie+1) %2;
+			}else if(presence == 'apero'){
+				inscription.presence_apero = (inscription.presence_apero+1) %2;
+			}
+		}).
+		error(function(data, status) {
+			alert('Impossible de mettre a jour la presence : '+data);
+		});
+	};
+	
+	$scope.nombre = function nombre(fct){
+		if($scope.inscriptions != undefined){
+			var nb = 0;
+			for(var i = 0; i< $scope.inscriptions.length; i++){
+				var inscription = $scope.inscriptions[i];
+				if(fct == 'a' && !!inscription.presence_apero){
+					nb += inscription.nb_adultes + inscription.nb_enfants;
+				}else if(fct == 'c' && !!inscription.presence_ceremonie){
+					nb += inscription.nb_adultes + inscription.nb_enfants;
+				}else if(fct == 'r' && !!inscription.presence_repas){
+					nb += inscription.nb_adultes + inscription.nb_enfants;					
+				}
+			}
+			return nb;
+		}
+	}
+}
 
+function AdminEditCtrl($scope, $routeParams, $http, $location){
+	var id = $routeParams.id;
+	
+	$scope.inscription = new Object();
+	$scope.inscription.nbEnfants = 0;
+	$scope.inscription.nbAdultes = 1;
+	
+	$http({method: 'GET', url: '/a/inscription/' + id}).
+	success(function(data, status) {
+		$scope.inscription = data[0];
+	}).
+	error(function(data, status) {
+		alert("Impossible de recuperer l'inscription : " + data);
+	});
+	
+	
+	$scope.isFormValid = function isFormValid(showErrors){
+		var errors = $scope.getErrors();
+
+		if(showErrors){
+			$scope.erreurs = errors;
+		}
+		return (errors.length == 0);
+	}
+
+	$scope.nbPersonnes = function nbPersonnes(){
+		return parseInt($scope.inscription.nbAdultes) + parseInt($scope.inscription.nbEnfants);
+	}
+
+	$scope.getErrors = function getErrors(){
+		var errors = [];
+		var inscription = $scope.inscription;
+		
+		if(inscription.nom == undefined || inscription.nom.length == 0){
+			errors.push("Le nom est requis.");
+		}
+
+		if(inscription.prenom == undefined || inscription.prenom.length == 0){
+			errors.push("Le pr&eacute;nom est requis.");
+		}
+
+		if(inscription.besoinNavette && (inscription.lieuNavette == undefined || inscription.lieuNavette.length == 0) ){
+			errors.push("Indiquez votre lieu de retour.");	
+		}
+
+		return errors;
+	}
+
+	$scope.confirmer = function confirmer(){
+		if(! $scope.isFormValid(true))
+			return false;
+
+		// Validation du formulaire
+		$http({method: 'POST', url: '/s/inscription/'+$scope.inscription.id , data : $scope.inscription}).
+		success(function(data, status) {
+			$location.path('/admin');
+		}).
+		error(function(data, status) {
+			alert('Erreur : '+data);
+		});
+	}
+}
+
+function AdminLinkCtrl($scope, $routeParams, $http){
+	var id = $routeParams.id;
+	
+	// Details de l'inscription
+	$http({method: 'GET', url: '/a/inscription/' + id}).
+	success(function(data, status) {
+		$scope.inscription = data[0];
+	}).
+	error(function(data, status) {
+		alert("Impossible de recuperer l'inscription : " + data);
+	});
+	
+	// Invites lies
+	$http({method: 'GET', url: '/a/inscription/invite/' + id}).
+	success(function(data, status) {
+		$scope.inscription.invites = data;
+	}).
+	error(function(data, status) {
+		alert("Impossible de recuperer les invites lies : " + data);
+	});
+	
+	// Invites restants
+	$http({method: 'GET', url: '/a/invite' }).
+	success(function(data, status) {
+		$scope.invites = data;
+	}).
+	error(function(data, status) {
+		alert("Impossible de recuperer les invites : " + data);
+	});
+	
+	$scope.preselect = function preselect(invite){
+		if($scope.selection === invite){
+			$http({method: 'POST', url: '/a/compose', data : {invite : invite.id, inscription : id } }).
+			success(function(data, status) {
+				$scope.inscription.invites.push(invite);
+				$scope.selection = undefined;
+			}).
+			error(function(data, status) {
+				alert("Impossible de lier l'invite : " + data);
+			});	
+		}else{
+			$scope.selection = invite;
+		}
+	}
+	
+	$scope.deselect = function deselect(invite){
+		if($scope.selection === invite){
+			$http({method: 'DELETE', url: '/a/compose', params : {invite : invite.id, inscription : id } }).
+			success(function(data, status) {
+				if(data){
+					for (var i = $scope.inscription.invites.length-1; i >= 0; i--) {
+					    if ($scope.inscription.invites[i].id == invite.id) {
+					        $scope.inscription.invites.splice(i, 1);
+					        break;
+					    }
+					}
+					$scope.selection = undefined;
+				}
+			}).
+			error(function(data, status) {
+				alert("Impossible de supprimer le lien de l'invite : " + data);
+			});	
+		}else{
+			$scope.selection = invite;
+		}
+	}
+	
+	$scope.isLinkedToInscription = function isLinkedToInscription(invite){
+		if( $scope.inscription != undefined && $scope.inscription.invites != undefined){
+			for( var i = 0; i < $scope.inscription.invites.length; i++ ){
+					if($scope.inscription.invites[i].id ===invite.id){
+						return false;
+					}
+				
+			}
+			return true;			
+		}else{
+			return true;			
+		}
+
+	}
+	
+	$scope.confirmer = function confirmer(){
+		// Validation du formulaire
+		$http({method: 'PUT', url: '/a/invite/'+$scope.selection.id , params : {nom : $scope.selection.nom, prenom : $scope.selection.prenom,
+		presence_apero : $scope.selection.presence_apero, presence_repas : $scope.selection.presence_repas, presence_ceremonie : $scope.selection.presence_ceremonie }}).
+		success(function(data, status) {
+			$('#correctionInvite').modal('hide');
+		}).
+		error(function(data, status) {
+			alert('Erreur : '+data);
+		});
+	}
+	
+}
+
+function AdminLogsCtrl($scope, $http) {
+	$scope.predicate = '';
+	$scope.reverse = false;
+        
+	$http({method: 'GET', url: '/a/logs'}).
+	success(function(data, status) {
+		$scope.logs = data;
+	}).
+	error(function(data, status) {
+		alert("Impossible de recuperer les logs : " + data);
+	});
 }

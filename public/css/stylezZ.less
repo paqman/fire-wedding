@@ -5,6 +5,8 @@
 @color3 : #B58389;
 @color4 : #E19E95;
 @bgColor : #E5E6D3;
+@green1 : #BADA55;
+@grey1 : #777777;
 
 
 .bgLinearPurple {
@@ -252,16 +254,25 @@ table.avecTotal tbody tr:last-child
 	}
 }
 
+table tr:hover{
+	.showHover{
+		visibility : visible;
+	}
+}
+
 [class*="icon-"].with-action
 {
 	background-color : @color1;
 	border-radius : 3px;
 	padding : 1px;
+	padding-right : 2px;
+	padding-bottom : 2px;
 	border-top : 2px solid @color1;
 	border-left : 2px solid @color1;
 	border-right : 1px solid @color3;
 	border-bottom : 1px solid @color3;
 	cursor: pointer;
+	color : white;
 
 	&:hover{
 		background-color : @color2;
@@ -270,7 +281,56 @@ table.avecTotal tbody tr:last-child
 		border-right : 1px solid @color1;
 		border-bottom : 1px solid @color1;
 	}
+	&.active{
+		background-color : @green1;
+		border-color : @green1;
+		&:hover{
+			background-color : darken(@green1, 10%);
+			border-color : darken(@green1, 10%);
+		}
+	}
+	&.inactive{
+		background-color : @grey1;
+		border-color : @grey1;
+		&:hover{
+			background-color : lighten(@grey1, 10%);
+			border-color : lighten(@grey1, 10%);
+		}		
+	}	
 }
 
+table .showHover {
+	visibility : hidden;
+}
 
+table.withIcons .showHover{
+	visibility : visible;
+}
 
+a:hover i{
+	text-decoration : none;
+}
+
+.active{
+	background-color : @color3;
+}
+
+.hidden{
+	display : none;
+}
+
+.oneLine{
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+th.orderBy.up
+{
+    i:before{content:"\f078"}
+}
+
+th.orderBy
+{
+    i:before{content:"\f077"}	
+}

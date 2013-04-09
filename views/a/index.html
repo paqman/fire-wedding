@@ -1,24 +1,29 @@
+<div class="input-prepend pull-right">
+	<span class="add-on"><i class="icon-search"></i></span>
+	<input type="text" class="input-medium" placeholder="Filtre" ng-model="filtre" />
+</div>
+<a href="#/admin/logs" class="pull-right btn btn-inverse" style="margin-right : 10px;"> <i class="icon-file-alt"> </i> Logs</a>
+<a href="#/admin/stats" class="pull-right btn btn-warning" style="margin-right : 10px;"> <i class="icon-tasks"> </i> Stats</a>
 <h1>Inscriptions</h1>
 <div class="row-fluid">
 	<div class="span12">
-		<table class="table avecTotal">
+		<table class="table avecTotal" ng-class="{withIcons : showIcones}">
 			<thead>
 				<tr>
-					<th style="width : 16px;"></th>
-					<th class="w25">Nom</th>
-					<th class="w15">Personnes</th>
-					<th class="w10">Couchage(s)</th>
-					<th class="w10">Repas Dimanche</th>
-					<th class="w10">Navette</th>
+					<th ng-click="predicate = 'view'; reverse=!reverse" ng-class="{orderBy : predicate == 'view',up : reverse}" style="width : 16px;"><i class="pull-right icon-"></i></th>
+					<th class="w25" ng-click="predicate = ['prenom', 'nom']; reverse=!reverse" ng-class="{orderBy : predicate[0] == 'prenom',up : reverse}"><i class="pull-right icon-"></i>Nom</th>
+					<th class="w15" ng-click="predicate = ['nb_adultes', 'nb_enfants']; reverse=!reverse" ng-class="{orderBy : predicate[0] == 'nb_adultes',up : reverse}"><i class="pull-right icon-"></i>Personnes</th>
+					<th class="w10" ng-click="predicate = 'nb_couchages'; reverse=!reverse" ng-class="{orderBy : predicate == 'nb_couchages',up : reverse}"><i class="pull-right icon-"></i>Couchage(s)</th>
+					<th class="w10" ng-click="predicate = 'presence_dimanche'; reverse=!reverse" ng-class="{orderBy : predicate == 'presence_dimanche',up : reverse}"><i class="pull-right icon-"></i>Repas Dimanche</th>
+					<th class="w10" ng-click="predicate = 'besoin_navette'; reverse=!reverse" ng-class="{orderBy : predicate == 'besoin_navette',up : reverse}"><i class="pull-right icon-"></i>Navette</th>
 					<th>Commentaires</th>
-					<th class="w10"></th>
+					<th class="w10" style="text-align : right;"><input type="checkbox" name="showIcones" ng-model="showIcones" /> Ic&ocirc;nes</th>
 				</tr>
 			</thead>
 			<tbody>
-				<tr ng-repeat="inscription in inscriptions">
+				<tr ng-repeat="inscription in inscriptions | filter:filtre | orderBy:predicate:reverse">
 					<td><i ng-click="switchInvite(inscription)" class="with-action icon-white" ng-class="{'icon-user' : inscription.view == undefined || inscription.view == 'commentaires', 'icon-comment' : inscription.view == 'invites'}" ng-show="inscription.invite != undefined"></i></td>
 					<td>
-						
 						{{inscription.prenom}} {{inscription.nom}}
 					</td>
 					<td>
@@ -41,15 +46,20 @@
 					</td>
 					<td>
 						<div ng-show="inscription.view == undefined || inscription.view == 'commentaires'">
-							{{inscription.commentaires}}
+							<small>{{inscription.commentaires}}</small>
 						</div>
 						<ul class="unstyled" ng-show="inscription.view == 'invites'">
 							<li ng-repeat="inv in inscription.invites">{{inv.prenom}} {{inv.nom}}</li>
 						</ul>
 					</td>
 					<td style="text-align : right;">
-						<i class="with-action icon-white icon-pencil"></i>
-						<i class="with-action icon-white icon-random"></i>						
+						<a href="#/admin/edit/{{inscription.id}}"><i class="with-action icon-white icon-pencil"></i></a>
+						<a href="#/admin/inscription/{{inscription.id}}"><i class="with-action icon-white icon-random"></i></a>
+						<span style="display: block; margin-top : 5px;" class="showHover">
+						<i class="with-action icon-white icon-heart" ng-class="{active : inscription.presence_ceremonie, inactive : !inscription.presence_ceremonie}" ng-click="updatePresence(inscription, 'ceremonie')"></i>						
+						<i class="with-action icon-white icon-food" ng-class="{active : inscription.presence_repas, inactive : !inscription.presence_repas}" ng-click="updatePresence(inscription, 'repas')"></i>						
+						<i class="with-action icon-white icon-glass" ng-class="{active : inscription.presence_apero, inactive : !inscription.presence_apero}" ng-click="updatePresence(inscription, 'apero')"></i>
+						</span>
 					</td>
 				</tr>
 				<tr>
@@ -65,7 +75,13 @@
 					<td class="w10">{{totaux.dimanche}} repas Dimanche</td>
 					<td class="w10">{{totaux.navette}} navettes</td>
 					<td></td>
-					<td></td>
+					<td>
+						<ul class="unstyled">
+							<li>{{nombre('c') }} c&eacute;r&eacute;monie</li>
+							<li>{{nombre('r') }} repas</li>
+							<li>{{nombre('a') }} aperos</li>
+						</ul>
+					</td>
 				</tr>
 			</tbody>
 		</table>

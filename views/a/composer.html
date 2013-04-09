@@ -1,0 +1,94 @@
+<!-- Button to trigger modal
+<a href="#correctionInvite" role="button" class="btn" data-toggle="modal">Launch demo modal</a>
+  -->
+<!-- Modal -->
+<div id="correctionInvite" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Invite</h3>
+  </div>
+  <div class="modal-body">
+		<label for="nom">Nom</label>
+		<input type="text" name="nom" value="" id="nom" ng-model="selection.nom" placeholder="Nom" class="input-xlarge" />
+
+		<label for="prenom">Pr&eacute;nom</label>
+		<input type="text" name="prenom" value="" id="prenom" ng-model="selection.prenom" class="input-xlarge" placeholder="Pr&eacute;nom" />
+
+		<div class="row-fluid">
+			<div class="span4">
+				<label class="checkbox">
+					<input type="checkbox" name="presence_ceremonie" ng-model="selection.presence_ceremonie" ng-checked="!!selection.presence_ceremonie" />
+					C&eacute;r&eacute;monie
+				</label>
+			</div>
+			<div class="span4">
+				<label class="checkbox">
+					<input type="checkbox" name="presence_apero" ng-model="selection.presence_apero" ng-checked="!!selection.presence_apero" />
+					Ap&eacute;ro
+				</label>
+			</div>
+			<div class="span4">
+				<label class="checkbox">
+					<input type="checkbox" name="presence_repas" ng-model="selection.presence_repas" ng-checked="!!selection.presence_repas"/>
+					Repas
+				</label>
+			</div>
+		</div>
+
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Fermer</button>
+    <button class="btn btn-primary" ng-click="confirmer()">Confirmer</button>
+  </div>
+</div>
+
+<h1>{{inscription.nom}} {{inscription.prenom}}</h1>
+<div class="row-fluid">
+	<div class="span6">
+		<table class="table" drop="1">
+			<thead>
+				<tr>
+					<th>
+						<h4>S&eacute;l&eacute;ctionn&eacute;s</h4>
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr ng-repeat="invite in inscription.invites" ng-click="deselect(invite)" ng-class="{active : selection == invite}">
+					<td>{{invite.nom}} {{invite.prenom}}
+					<span style="display: block" class=" pull-right">					
+						<a href="#correctionInvite" data-toggle="modal" class="showHover"><i class="with-action icon-white icon-pencil"></i></a>
+						<i class="with-action icon-white icon-heart" ng-class="{active : invite.presence_ceremonie, inactive : !invite.presence_ceremonie}"></i>						
+						<i class="with-action icon-white icon-food" ng-class="{active : invite.presence_repas, inactive : !invite.presence_repas}"></i>
+						<i class="with-action icon-white icon-glass" ng-class="{active : invite.presence_apero, inactive : !invite.presence_apero}"></i>
+					</span>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<div class="span6">
+		<table class="table" drop="0">
+			<thead>
+				<tr>
+					<th>
+						<input type="text" class="input-medium" placeholder="Filtre" ng-model="filtre" />
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr ng-repeat="invite in invites | filter:filtre"
+					ng-click="preselect(invite)" ng-class="{active : selection == invite}">
+					<td ng-class="{hidden : !isLinkedToInscription(invite)}"}>{{invite.nom}} {{invite.prenom}}
+					<span style="display: block" class=" pull-right">					
+						<a href="#correctionInvite" data-toggle="modal" class="showHover"><i class="with-action icon-white icon-pencil"></i></a>
+						<i class="with-action icon-white icon-heart" ng-class="{active : invite.presence_ceremonie, inactive : !invite.presence_ceremonie}"></i>						
+						<i class="with-action icon-white icon-food" ng-class="{active : invite.presence_repas, inactive : !invite.presence_repas}"></i>
+						<i class="with-action icon-white icon-glass" ng-class="{active : invite.presence_apero, inactive : !invite.presence_apero}"></i>
+					</span>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>

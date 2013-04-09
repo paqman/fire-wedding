@@ -50,7 +50,7 @@ app.configure(function() {
 	app.use(express.logger({format: 'dev'}));
 	app.use(express.bodyParser());
 	app.use(express.cookieParser());
-	app.use(express.session({ secret: 'evilWorldDom1nat10nPlanzisstillsmallshouldhaveNoWords' }));
+	app.use(express.session({ secret: 'my0verHudgeC00k13S3cretPa55w0rd0fTh3D3athWithBatman', cookie : { maxAge : 1000 * 60 * 20 } }));
 	app.use(express.methodOverride());
 	app.use(app.router);
 	app.use(express.static(__dirname + '/public'));
@@ -65,6 +65,22 @@ app.configure('development', function() {
 app.configure('production', function() {
 	app.use(express.errorHandler());
 });
+
+app.param(function(name, fn){
+	if(fn instanceof RegExp){
+		return function(req, res, next, val){
+			var captures;
+			if(captures = fn.exec(String(val))){
+				req.params[name] = captures;
+				next();
+			}else{
+				next('route');
+			}
+		}
+	}
+});
+
+app.param('id', /^\d+$/);
 
 // Routes
 require('./routes.js');

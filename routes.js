@@ -11,7 +11,7 @@ require('./utils.js');
  	if (isAdmin(request)) {
  		next();
  	} else {
- 		response.send(403, 'must auth');
+ 		response.send(403, 'Vous devez &ecirc;tre authentifi&eacute;.<br /><a href="/">Retour</a>');
  	}
  });
 
@@ -19,7 +19,7 @@ require('./utils.js');
  	if (isAuthenticated(request)) {
  		next();
  	} else {
- 		response.send(403, 'must auth');
+ 		response.send(403, 'Vous devez &ecirc;tre authentifi&eacute;.<br /><a href="/">Retour</a>');
  	}
  });
 
@@ -68,19 +68,36 @@ app.get('/v/:vue/:nom', function(request, response){
  * AUTH methods
  */
  app.post('/entrer', function(request, response) {
-
- 	console.info('login PARAM: ', request.body);
+ 	var authent = { date_connexion : new Date(), ip : request.ip, navigateur : request.headers['user-agent'] };
 
  	if (GLOBAL.no_auth || request.body.password == 'emilie') {
- 		request.session.authed = true;
- 		request.session.role = 'user';
- 		response.redirect('/s/');
+ 		request.session.regenerate(function(err){
+		   	request.session.authed = true;
+	 		request.session.role = 'user';
+	 		authent.valide = authent.mot_de_passe = 1;
+	 		var query = connection_rw.query('INSERT INTO log_connexion SET ?', authent, function(err, result){
+				response.redirect('/s/');
+			});
+	 		
+	 		return;
+		 });
  	} else if (GLOBAL.no_auth || request.body.password == 'michael') {
- 		request.session.authed = true;
- 		request.session.role = 'admin';
- 		response.redirect('/s/');
+ 		request.session.regenerate(function(err){
+ 			request.session.authed = true;
+ 			request.session.role = 'admin';
+	 		authent.valide = authent.mot_de_passe = 1;
+	 		var query = connection_rw.query('INSERT INTO log_connexion SET ?', authent, function(err, result){
+				response.redirect('/s/');
+			});
+ 			return;
+		 });
  	} else {
- 		response.render("entrer.html", {locals : {errorMessage : "Mauvaises informations !"}});
+ 		authent.valide = 0; 
+ 		authent.mot_de_passe = request.body.password
+ 		var query = connection_rw.query('INSERT INTO log_connexion SET ?', authent, function(err, result){
+			response.render("entrer.html", {locals : {errorMessage : "Mauvaises informations !"}});
+		});		
+ 		return;
  	}
 
  });
@@ -92,10 +109,10 @@ app.get('/v/:vue/:nom', function(request, response){
  	response.redirect('/');
  });
 
-/*
+/**
  * Invites
  */
- app.get('/invite/:opt?', function(request, response) {
+ app.get('/a/invite/:opt?', function(request, response) {
  	var query;
  	var invites = [];
 
@@ -121,15 +138,102 @@ app.get('/v/:vue/:nom', function(request, response){
  });
 
  // UPDATE
- app.put('/invite', function(request, response){
+ app.put('/a/invite/:id', function(request, response) {
+ 	var patt = regExName;
 
+ 	var errors = [];
+ 	if(isEmpty(request.query.nom)){
+ 		errors.push("Veuillez entrer votre nom.");
+ 	}else{
+ 		if(! patt.test(request.query.nom)){
+			errors.push("Certains caracteres de votre nom sont interdits.");
+	 	}
+ 	}
+
+ 	if(isEmpty(request.query.prenom)){
+ 		errors.push("Veuillez entrer votre prenom.");
+ 	}else{
+ 		if(! patt.test(request.query.prenom)){
+			errors.push("Certains caracteres de votre prenom sont interdits.");
+	 	}
+ 	}
+ 	
+ 	var presence_apero = !isEmpty(request.query.presence_apero) && (request.query.presence_apero == 'true' || request.query.presence_apero == '1' ) ? 1 : 0; 	
+ 	var presence_ceremonie = !isEmpty(request.query.presence_ceremonie) && (request.query.presence_ceremonie == 'true' || request.query.presence_ceremonie == '1' ) ? 1 : 0;
+ 	
+ 	var presence_repas = !isEmpty(request.query.presence_repas) && (request.query.presence_repas == 'true' || request.query.presence_repas == '1' ) ? 1 : 0;
+
+ 	
+ 	// Si on a des erreurs, on les retourne
+ 	if(errors.length > 0){
+ 		response.json(500, errors);
+ 		return;
+ 	}
+	
+	var query = connection_rw.query('UPDATE invite set nom=?, prenom=?, presence_apero=?, presence_ceremonie=?, presence_repas=? WHERE id = ?', [request.query.nom, request.query.prenom, presence_apero, presence_ceremonie, presence_repas, request.params.id], 
+		function(err, rows, fields){
+			if (err) throw err;
+			
+			response.json(rows.affectedRows);
+			return;
+		});
  });
+
+app.post('/a/compose', function(request,response){
+	if(isEmpty(request.body.invite) || isEmpty(request.body.inscription)){
+ 		response.json(400, "bad request");		
+		return ;
+	}
+	
+	var q = connection_r.query('SELECT id as val FROM compose WHERE id_invite = ? AND id_inscription = ?', 
+		[request.body.invite, request.body.inscription], function(err, rows, fields){
+		if(err) throw err;
+		
+		if(rows.length == 0){	
+			var composition = {id_inscription : request.body.inscription, id_invite : request.body.invite, date_lien : new Date()};
+			
+			var query = connection_rw.query('INSERT INTO compose SET ?', composition, 
+			function(err, result){
+				if (err) throw err;
+				
+				response.json(composition);
+				return;
+			});	
+		}
+
+	});
+});
+
+app.delete('/a/compose', function(request,response){
+	console.log(request.query);
+	if(isEmpty(request.query.invite) || isEmpty(request.query.inscription)){
+ 		response.json(400, "bad request");		
+		return ;
+	}
+	
+	var q = connection_r.query('SELECT id as val FROM compose WHERE id_invite = ? AND id_inscription = ?', 
+		[request.query.invite, request.query.inscription], function(err, rows, fields){
+		if(err) throw err;
+		
+		if(rows.length > 0){	
+			
+			var query = connection_rw.query('DELETE FROM compose WHERE id_invite = ? AND id_inscription = ?', [request.query.invite, request.query.inscription], 
+			function(err, result){
+				if (err) throw err;
+				
+				response.json(true);
+				return;
+			});	
+		}
+
+	});
+});
 
  /*
  * Enregistrement d'un nouvel invite
  */
  app.post('/a/invite', function(request, response){
- 	var patt = /^[a-zA-Z0-9!\?-_:\',\.\+\s]*$/im;
+ 	var patt = regExName;
  	
  	var invite = new Object();
  	var errors = [];
@@ -185,10 +289,10 @@ app.get('/v/:vue/:nom', function(request, response){
 
 /*
  * Recupere les invites lies a une inscription
-*/
-app.get('/a/inscription/invite/:opt', function(request, response){
+ */
+app.get('/a/inscription/invite/:id', function(request, response){
 	var invites = [];
- 	var query = connection_r.query('SELECT i.* FROM `invite` i, `compose` c WHERE i.id = c.id_invite and c.id_inscription = ?', [request.params.opt]);
+ 	var query = connection_r.query('SELECT i.* FROM `invite` i, `compose` c WHERE i.id = c.id_invite and c.id_inscription = ?', [request.params.id]);
 
  	query.on('error', function(err){
  		console.log('MYSQL error :' + err);
@@ -206,15 +310,24 @@ app.get('/a/inscription/invite/:opt', function(request, response){
 /*
  * Inscriptions
  */
- app.get('/a/inscription', function(request, response){
+ app.get('/a/inscription/:id?', function(request, response){
  	var invites = [];
- 	var query = connection_r.query('SELECT i.*, c.id_invite as invite FROM `inscription` i LEFT JOIN `compose` c ON c.id_inscription = i.id  group by i.id');
+ 	var single = false;
+ 	if(request.params.id != null && parseInt(request.params.id) > 0){
+ 		single = true;
+ 		var query = connection_r.query('SELECT i.*, c.id_invite as invite FROM `inscription` i LEFT JOIN `compose` c ON c.id_inscription = i.id WHERE i.id = ? GROUP BY i.id', [request.params.id]);
+ 	}else {
+ 		 var query = connection_r.query('SELECT i.*, c.id_invite as invite FROM `inscription` i LEFT JOIN `compose` c ON c.id_inscription = i.id  GROUP BY i.id');	
+ 	}
 
  	query.on('error', function(err){
  		console.log('MYSQL error :' + err);
  	});
 
  	query.on('result', function(row){
+ 		if(single){
+ 			row = mapInscriptionDb2Screen(row);
+ 		}
  		invites.push(row);
  	});
 
@@ -222,13 +335,41 @@ app.get('/a/inscription/invite/:opt', function(request, response){
  		response.json(invites);
  	});
  });
+ 
+ /**
+  * Update de la presence du bonhomme au repas
+  */
+  app.put('/a/presence/:id/:typePresence', function(request, response){
+  	var type_presence = 'presence_apero'; 
+//  	if(request.params.id != undefined)
+	if(request.params.typePresence == 'ceremonie') {
+		type_presence = 'presence_ceremonie';
+	}else if(request.params.typePresence == 'repas') {
+		type_presence = 'presence_repas';		
+	}
+	
+	var q = connection_r.query('SELECT '+type_presence+' as val FROM inscription WHERE id = ?', [request.params.id], function(err, rows, fields){
+		if(err) throw err;
+		var val = rows[0].val;
+		val = (val+1) %2;
+		
+		var query = connection_rw.query('UPDATE inscription set '+type_presence+'=? WHERE id = ?', [val, request.params.id], 
+		function(err, rows, fields){
+			if (err) throw err;
+			
+			response.json(rows.affectedRows);
+			return;
+		});
+
+	});
+  });
 
 /*
  * Enregistrement d'une inscription
  */
- app.post('/s/inscription', function(request, response){
- 	var patt = /^[a-zA-Z0-9!\?-_:\',\.\+\s]*$/im;
- 	console.log(request.body);
+ app.post('/s/inscription/:id?', function(request, response){
+ 	var patt = regExName;
+
  	var inscription = new Object();
  	var errors = [];
  	if(isEmpty(request.body.nom)){
@@ -299,13 +440,42 @@ app.get('/a/inscription/invite/:opt', function(request, response){
  		inscription.presence_apero = inscription.presence_ceremonie = inscription.presence_repas = 0;
  	}
 
- 	inscription.date_inscription = new Date();
-	inscription.is_active = true;
-	inscription.ip = request.ip;
-
- 	// Enregistrement en DB
-	var query = connection_rw.query('INSERT INTO inscription SET ?', inscription, function(err, result){
-		response.json(inscription);
-	});
-   
+	if(request.params.id != undefined && isAdmin(request)){
+		var query = connection_rw.query('UPDATE inscription SET ? WHERE id = '+connection_rw.escape(request.params.id), inscription, function(err, result){
+			response.json(result);
+		});
+		
+	}else{	
+	
+	 	inscription.date_inscription = new Date();
+		inscription.is_active = true;
+		inscription.ip = request.ip;
+	
+	 	// Enregistrement en DB
+		var query = connection_rw.query('INSERT INTO inscription SET ?', inscription, function(err, result){
+			response.json(inscription);
+		});
+	return;
+	}
  });
+ 
+ /**
+  * LOGS
+  */
+app.get('/a/logs', function(request, response){
+	var logs = [];
+	var query = connection_r.query('SELECT * FROM log_connexion ORDER BY date_connexion DESC');	
+
+ 	query.on('error', function(err){
+ 		console.log('MYSQL error :' + err);
+ 	});
+
+ 	query.on('result', function(row){
+ 		logs.push(row);
+ 	});
+
+ 	query.on('end',function(){
+ 		response.json(logs);
+ 	});
+});
+	

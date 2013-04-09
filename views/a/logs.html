@@ -1,0 +1,38 @@
+<a href="#/admin" class="pull-right btn btn-inverse" style="margin-right : 10px;"> <i class="icon-file-alt"> </i> Liste</a>
+<a href="#/admin/stats" class="pull-right btn btn-warning" style="margin-right : 10px;"> <i class="icon-tasks"> </i> Stats</a>
+<h1>Logs</h1>
+<div class="row-fluid">
+	<div class="span12">
+		<table class="table avecTotal" ng-class="{withIcons : showIcones}">
+			<thead>
+				<tr>
+					<th ng-click="predicate = 'valide'; reverse=!reverse" ng-class="{orderBy : predicate == 'valide',up : reverse}"><i class="pull-right icon-"></i></th>
+					<th ng-click="predicate = 'date_connexion'; reverse=!reverse" ng-class="{orderBy : predicate == 'date_connexion',up : reverse}">Date<i class="pull-right icon-"></i></th>
+					<th ng-click="predicate = 'ip'; reverse=!reverse" ng-class="{orderBy : predicate == 'ip',up : reverse}"><i class="pull-right icon-"></i>IP</th>
+					<th ng-click="predicate = 'navigateur'; reverse=!reverse" ng-class="{orderBy : predicate == 'navigateur',up : reverse}"><i class="pull-right icon-"></i>Browser</th>
+					<th class="" style="text-align : right;"><input type="checkbox" name="showIcones" ng-model="showIcones" /> Pass</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr ng-repeat="log in logs | filter:filtre | orderBy:predicate:reverse">
+					<td><i class="with-action icon-white" ng-class="{'icon-thumbs-up active' : log.valide == 1, 'icon-thumbs-down' : log.valide == 0}"></i></td>
+					<td>
+						{{log.date_connexion | date:"dd'/'MM'/'yyyy' 'HH':'mm':'ss"}}
+					</td>
+					<td>
+						{{log.ip}}
+					</td>
+					<td class="oneLine">{{log.navigateur}}</td>
+					<td>
+						<span ng-show="log.valide == 0" class="showHover">
+							{{log.mot_de_passe}}
+						</span>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="5" style="text-align : right;" >{{logs.length}} connexions</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
