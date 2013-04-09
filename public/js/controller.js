@@ -351,3 +351,92 @@ function AdminLogsCtrl($scope, $http) {
 		alert("Impossible de recuperer les logs : " + data);
 	});
 }
+
+function AdminStatsCtrl($scope, $http, $q){
+	$scope.stats = new Object();
+	$scope.navettes = new Array();
+	$scope.totaux = {};
+	
+	var promiseStart = $q.when('start');
+	
+	// Invites	
+	var p1 = promiseStart.then(function (value) {
+        return $http({method: 'GET', url: '/a/invite'}).
+			success(function(data, status) {
+				$scope.invites = data;
+				$scope.stats.nbEnfantsInvites = $scope.stats.nbAdultesInvites = $scope.stats.nbPersonnesInvites = 0;
+				$scope.stats.nbCeremoniesInvites = $scope.stats.nbRepasInvites = $scope.stats.nbAperosInvites = 0;
+				for(var i = 0; i< $scope.invites.length; i++) {
+					var invite = $scope.invites[i];
+					$scope.stats.nbPersonnesInvites += invite.nb_adultes + invite.nb_enfants;
+
+					if(invite.nb_adultes != undefined)
+						$scope.stats.nbAdultesInvites += invite.nb_adultes;
+
+					if(invite.nb_enfants != undefined)
+						$scope.stats.nbEnfantsInvites += invite.nb_enfants;		
+						
+					if(!!invite.presence_apero)
+						$scope.stats.nbAperosInvites += invite.nb_adultes + invite.nb_enfants;
+
+					if(!!invite.presence_repas)
+						$scope.stats.nbRepasInvites += invite.nb_adultes + invite.nb_enfants;
+						
+					if(!!invite.presence_ceremonie)
+						$scope.stats.nbCeremoniesInvites += invite.nb_adultes + invite.nb_enfants;
+						
+				}
+			});
+	});
+	
+	// Inscriptions
+	var p2 = p1.then(function (value) {
+		return $http({method: 'GET', url: '/a/inscription' }).
+		success(function(data, status) {
+			$scope.inscriptions = data;
+			
+			$scope.stats.nbCouchagesInscrits = $scope.stats.nbDimanchesInscrits = $scope.stats.nbPersonnesInscrites = 0;
+			$scope.stats.nbRepasInscrits = $scope.stats.nbCeremoniesInscrits = $scope.stats.nbAperosInscrits = 0;
+			$scope.stats.nbEnfantsInscrits = $scope.stats.nbAdultesInscrits = 0;
+			for(var i = 0; i< $scope.inscriptions.length; i++){
+				var inscription = $scope.inscriptions[i];
+				$scope.stats.nbPersonnesInscrites += inscription.nb_adultes + inscription.nb_enfants;
+			
+				if(inscription.nb_adultes != undefined)
+					$scope.stats.nbAdultesInscrits += inscription.nb_adultes;
+
+				if(inscription.nb_enfants != undefined)
+					$scope.stats.nbEnfantsInscrits += inscription.nb_enfants;					
+			
+				if(inscription.nb_couchages > 0)
+					$scope.stats.nbCouchagesInscrits += inscription.nb_couchages;
+				
+				if(inscription.presence_dimanche != 0)
+					$scope.stats.nbDimanchesInscrits += inscription.nb_adultes + inscription.nb_enfants;
+					
+				if(!!inscription.presence_apero)
+					$scope.stats.nbAperosInscrits += inscription.nb_adultes + inscription.nb_enfants;
+
+				if(!!inscription.presence_repas)
+					$scope.stats.nbRepasInscrits += inscription.nb_adultes + inscription.nb_enfants;
+					
+				if(!!inscription.presence_ceremonie)
+					$scope.stats.nbCeremoniesInscrits += inscription.nb_adultes + inscription.nb_enfants;					
+				
+				if(inscription.besoin_navette != 0)
+					$scope.navettes.push(inscription.lieu_navette + ' [ ' + inscription.prenom + ' ' + inscription.nom + ' ]');
+				
+			}
+
+		});
+	});
+    
+	var promiseEnd = p2.then(function (value) {
+		// Invites et inscriptions disponibles
+		$scope.stats.statut = ($scope.stats.nbPersonnesInscrites / $scope.stats.nbPersonnesInvites) * 100;
+	}, function (reason) {
+		alert('Erreur lors de la recuperations des donnees : ' + reason);
+	    // Error in any request
+	    return $q.reject(reason);
+	});
+}
