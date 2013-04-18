@@ -45,7 +45,7 @@ div.container {
 }
 div.entrer div div div.bg{
 	padding : 20px;
-	background : url('../img/em-main.jpeg') no-repeat center 90px;
+	background : url('../img/em.png') no-repeat center 90px;
 	height : 570px;
 	text-align : center;
 	.motdepasse{
@@ -61,9 +61,9 @@ div.entrer div div div.bg{
 
 div.header {
 	height : 150px;
-	background : url('../img/em-main.jpeg') no-repeat left center;
+	background : url('../img/em.png') no-repeat left center;
 	background-position : 0px 0px;
-	background-size: 33%;
+	background-size: 28%;
 	width: 100%;
 	position : relative;
 
@@ -349,4 +349,40 @@ th.orderBy
 			width : 50px;
 		}
 	}
+}
+
+ul.lieux
+{
+	li{
+		margin-bottom : 20px;
+		a {color : #333;
+			span{
+				color : @color1;
+				font-weight : bold;
+			}
+			&:hover
+			{
+				text-decoration : none;
+			}
+		}
+		&:hover
+		{ 
+			cursor : pointer;
+			span{
+				color : @color3;
+			}
+		}
+	}
+}
+
+div.temoin
+{
+	font-weight : bold;
+	color : @color1;
+	span{
+		display : block;
+		margin-left : 10px;
+		color : @black;
+		font-weight : normal;
+	}	
 }

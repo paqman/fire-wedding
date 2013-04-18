@@ -11,16 +11,23 @@
 	<!--<link href='/css/stylezZ.css' rel="stylesheet" media="screen" />-->
 	<link href='http://fonts.googleapis.com/css?family=Sacramento' rel='stylesheet' type='text/css'>
 	<link href='/css/font-awesome.min.css' rel="stylesheet" media="screen" />
+	<link href='/css/angular-ui.min.css' rel="stylesheet" media="screen" />	
+
 
 	<!-- Bootstrap -->
-	
+	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>	
 	<script src="/js/lib/jquery.js"></script>
 	<script src="/js/lib/bootstrap.min.js"></script>
 	<script src="/js/lib/angular.min.js"></script>
 	<script src="/js/lib/angular-resource.min.js"></script>
+	<script src="/js/lib/angular-ui.min.js"></script>
 	<script src="/js/app.js"></script>
+	<% if(locals.admin){ %>
+		<script src="/js/adminController.js"></script>	
+	<% } %>
 	<script src="/js/controller.js"></script>
 	<script src="/js/resource.js"></script>
+	
 </head>
 <body>
 	
@@ -31,8 +38,8 @@
 					<% if(locals.admin){ %>
 						<li class="x"><a href="#/admin">Admin</a></li>
 					<% } %>
-					<li class="y"><a href="#">Inscription</a></li>
-					<li class="z"><a href="#/informations">Informations</a></li>
+					<li class="z"><a href="#">Informations</a></li>					
+					<li class="y"><a href="#/inscription">Inscription</a></li>
 					<li class="quitter"><a href="/quitter">Quitter</a></li>
 				</ul>
 			</div>

@@ -21,9 +21,13 @@
  GLOBAL.isUser = function isUser(req){
  	return (req.session.authed && req.session.role === 'user');	
  }
+ 
+ GLOBAL.isInvite = function isInvite(req) {
+ 	return (req.session.authed && req.session.role === 'invite');
+ }
 
  GLOBAL.isAuthenticated = function isAuthenticated(req){
- 	return (isAdmin(req) || isUser(req));
+ 	return (isAdmin(req) || isUser(req) || isInvite(req));
  }
  
  GLOBAL.mapInscriptionDb2Screen = function mapInscriptionDb2Screen(row) {
@@ -44,6 +48,14 @@
 	delete row.besoin_navette, row.lieu_navette, row.presence_dimanche, row.nb_enfants, row.nb_adultes, row.nb_couchages;
 
 	return row;
+}
+
+GLOBAL.getIp = function getIp(request){
+	if(request.headers['x-forwarded-for'] != undefined){
+		return request.headers['x-forwarded-for'];
+	}
+	
+	return request.ip;
 }
 
 GLOBAL.regExName = /^[a-z\u00E0-\u00FCA-Z0-9!\?\-_:\',\.\+\s]*$/im;

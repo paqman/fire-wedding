@@ -55,7 +55,7 @@ app.get('/v/:vue/:nom', function(request, response){
 		}
 
 		if(allowed){
-			response.render(request.params.vue + '/' + request.params.nom + '.html', {locals : {admin : isAdmin(request) }});
+			response.render(request.params.vue + '/' + request.params.nom + '.html', {locals : {admin : isAdmin(request), user : isUser(request), invite : isInvite(request) }});
 		}else{
 			response.send(404, "Page inconnue !");	
 		}
@@ -68,13 +68,24 @@ app.get('/v/:vue/:nom', function(request, response){
  * AUTH methods
  */
  app.post('/entrer', function(request, response) {
- 	var authent = { date_connexion : new Date(), ip : request.ip, navigateur : request.headers['user-agent'] };
+ 	var authent = { date_connexion : new Date(), ip : getIp(request), navigateur : request.headers['user-agent'] };
  	
 	var shasum = crypto.createHash('sha1');
 	shasum.update(settings.credential.salt + request.body.password);
 	var pass = shasum.digest('hex');
 
- 	if (pass === settings.credential.user) {
+ 	if (pass === settings.credential.invite) {
+ 		request.session.regenerate(function(err){
+		   	request.session.authed = true;
+	 		request.session.role = 'invite';
+	 		authent.valide = authent.mot_de_passe = 1;
+	 		var query = connection_rw.query('INSERT INTO log_connexion SET ?', authent, function(err, result){
+				response.redirect('/s/');
+			});
+	 		
+	 		return;
+		 });
+ 	} else if (pass === settings.credential.user) {
  		request.session.regenerate(function(err){
 		   	request.session.authed = true;
 	 		request.session.role = 'user';
@@ -209,7 +220,7 @@ app.post('/a/compose', function(request,response){
 });
 
 app.delete('/a/compose', function(request,response){
-	console.log(request.query);
+
 	if(isEmpty(request.query.invite) || isEmpty(request.query.inscription)){
  		response.json(400, "bad request");		
 		return ;
@@ -409,20 +420,26 @@ app.get('/a/inscription/invite/:id', function(request, response){
  		inscription.nb_adultes = request.body.nbAdultes;
  	}
 
- 	if(!isEmpty(request.body.couchageRequis) && isEmpty(request.body.nbCouchages)){
- 		errors.push("Indiquez le nombre de couchages.");
- 	}else{
- 		inscription.nb_couchages = isEmpty(request.body.couchageRequis) || !request.body.couchageRequis ? 0 : isEmpty(request.body.nbCouchages) ? 0 : request.body.nbCouchages;
- 	}
- 	
- 	if(request.body.besoinNavette && isEmpty(request.body.lieuNavette)){
-		errors.push("Indiquez votre lieu de retour.");
+	// Utilisateurs ou admins
+	if(! isInvite(request)){
+	 	if(!isEmpty(request.body.couchageRequis) && isEmpty(request.body.nbCouchages)){
+	 		errors.push("Indiquez le nombre de couchages.");
+	 	}else{
+	 		inscription.nb_couchages = isEmpty(request.body.couchageRequis) || !request.body.couchageRequis ? 0 : isEmpty(request.body.nbCouchages) ? 0 : request.body.nbCouchages;
+	 	}
+	 	
+	 	if(request.body.besoinNavette && isEmpty(request.body.lieuNavette)){
+			errors.push("Indiquez votre lieu de retour.");
+		}else{
+			inscription.besoin_navette = isEmpty(request.body.besoinNavette) || !request.body.besoinNavette ? 0 : 1;
+			inscription.lieu_navette = request.body.lieuNavette;
+		}
+	
+		inscription.presence_dimanche = isEmpty(request.body.presenceDimanche) || !request.body.presenceDimanche ? 0 : 1;
 	}else{
-		inscription.besoin_navette = isEmpty(request.body.besoinNavette) || !request.body.besoinNavette ? 0 : 1;
-		inscription.lieu_navette = request.body.lieuNavette;
+		// Invites apero
+		inscription.presence_dimanche = inscription.besoin_navette = inscription.nb_couchages = 0;
 	}
-
-	inscription.presence_dimanche = isEmpty(request.body.presenceDimanche) || !request.body.presenceDimanche ? 0 : 1;
 
 	if(isEmpty(request.body.commentaires) || patt.test(request.body.commentaires)){
 		inscription.commentaires = request.body.commentaires;
@@ -453,10 +470,10 @@ app.get('/a/inscription/invite/:id', function(request, response){
 	
 	 	inscription.date_inscription = new Date();
 		inscription.is_active = true;
-		inscription.ip = request.ip;
+		inscription.ip = getIp(request);
 	
 		if(!isAdmin(request)){
-			var checkQuery = connection_rw.query('SELECT * FROM inscription WHERE ip = ?', [request.ip], function(err, rows, fields){
+			var checkQuery = connection_rw.query('SELECT * FROM inscription WHERE ip = ?', [getIp(request)], function(err, rows, fields){
 				if (err) throw err;
 			
 				if(rows.length >= 3){

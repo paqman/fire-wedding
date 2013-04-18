@@ -1,7 +1,35 @@
 <h1>Informations</h1>
 <ul>
-	<li>Liste de cadeaux</li>
-	<li>Lieux ou on fait la fete (gmaps et compagnie)</li>
-	<li>Contacts supplementaires (des temoins)</li>
 	<li>Liste des hebergements</li>
 </ul>
+ <div class="row-fluid mt2">
+ 	<div class="span12">	
+	<h3>Liste de cadeaux</h3>
+	Etants en m&eacute;nage depuis quelques ann&eacute;es maintenant, nous avons d&eacute;j&agrave; l'&eacute;quipement n&eacute;cessaire &agrave; la vie en commun. Une tirelire sera mise &agrave; disposition lors du vin d'honneur.
+	</div>
+</div>
+<input type="hidden" value="<%= locals.invite %>"  name="isInvite" ng-model="isInvite" />
+ <div class="row-fluid mt2">
+ 	<div class="span6">
+		<h3>Plan</h3>
+		<ul class="unstyled lieux">
+			<li ng-repeat="marker in myMarkers" ng-click="myMap.panTo(marker.place.getPosition())">
+				<a ng-bind-html-unsafe="marker.title"></a>
+			</li>
+		</ul>
+	</div>
+	<div class="span6">
+		<div id="map_canvas" ui-map="myMap" class="map" style="width : 500px; height : 400px;"
+		ui-options="mapOptions">
+		</div>
+	</div>
+</div>
+ <div class="row-fluid mt2">
+ 	<div class="span12">
+		<h3>H&eacute;bergements alentours</h3>
+		<p>Au cas o&ugrave; nous ne pourrions pas vous loger, voici une liste d'h&eacute;bergements &agrave; proximit&eacute; de la salle.</p>
+	</div>
+	<div class="span6">
+		
+	</div>	
+ </div>

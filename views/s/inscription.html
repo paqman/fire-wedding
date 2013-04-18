@@ -40,7 +40,7 @@
 			</div>
 		</div>
 		<p class="">Soit {{nbPersonnes()}} personne(s).</p>
-
+			<% if(!locals.invite){ %>
 		<label class="checkbox">
 			<input type="checkbox" name="couchageRequis" ng-change="inscription.nbCouchages = nbPersonnes()" id="couchageRequis" value="true" ng-model="inscription.couchageRequis" />
 			Je souhaite b&eacute;n&eacute;ficier d'un couchage sur place le samedi soir. <span data-placement="right" class="aide" rel="tooltip" title="Des couchages communs sont mis &agrave; disposition &agrave; l'&eacute;tage de la salle.">?</span></label>
@@ -77,7 +77,7 @@
 				<label for="lieuNavette">Lieu de retour</label>
 				<input type="text" name="lieuNavette" value="" ng-model="inscription.lieuNavette" placeholder="Lieu de retour" />
 			</div>
-
+		<% } %>
 
 			<label class="mt2" for="commentaires">Si vous avez des commentaires, remarques ou toute autre information &agrave; nous faire savoir, n'h&eacute;sitez pas (allergies...) !</label>
 			<textarea id="commentaires" rows="5" class="input-xxlarge" name="commentaires" ng-model="inscription.commentaires"></textarea>
